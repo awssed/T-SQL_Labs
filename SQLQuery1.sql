@@ -1,0 +1,81 @@
+use master;
+alter database SES_MyBase set single_user with rollback immediate
+DROP database SES_MyBase
+create database SES_MyBase
+
+USE SES_MyBase
+
+CREATE database SES_MyBase on primary
+(name = 'SES_MyBase_mdf', filename = 'D:\Учёба\4сем\DataBase\Lab3\BD\SES_MyBase_mdf.mdf',
+size = 10240Kb,maxsize=UNLIMITED, filegrowth=1024Kb),
+( name = 'SES_MyBase_ndf', filename = 'D:\Учёба\4сем\DataBase\Lab3\BD\SES_MyBase_ndf.ndf', 
+   size = 10240KB, maxsize=1Gb, filegrowth=25%),
+filegroup FG
+( name = 'SES_MyBase_fg1_1', filename = 'D:\Учёба\4сем\DataBase\Lab3\BD\SES_MyBase_ndf2.ndf', 
+   size = 10240Kb, maxsize=1Gb, filegrowth=25%),
+( name = 'SES_MyBase_fg1_2', filename = 'D:\Учёба\4сем\DataBase\Lab3\BD\SES_MyBase_ndf3.ndf', 
+   size = 10240Kb, maxsize=1Gb, filegrowth=25%)
+log on
+( name = 'SES_MyBase_log', filename='D:\Учёба\4сем\DataBase\Lab3\BD\SES_MyBase_log.ldf',       
+   size=10240Kb,  maxsize=2048Gb, filegrowth=10%)
+
+CREATE table ВИДЫ_КРЕДИТОВ(
+Название_кредита nvarchar(50) primary key,
+Ставка decimal(2,2)
+) on FG
+
+CREATE table ВИДЫ_СОБСТВЕННОСТИ(
+ID_Собственности int primary key,
+Вид nvarchar(50)
+)on FG
+
+CREATE table КЛИЕНТЫ(
+ID_клиента int primary key,
+Название_фирмы nvarchar(50),
+Вид_собственности int foreign key references ВИДЫ_СОБСТВЕННОСТИ(ID_Собственности),
+Адрес nvarchar(50),
+Телефон nvarchar(50),
+Контактное_лицо nvarchar(50)
+)on FG
+
+CREATE table КРЕДИТЫ(
+ID int primary key,
+Наименование_кредита nvarchar(50) foreign key references ВИДЫ_КРЕДИТОВ(Название_кредита),
+ID_клиента int foreign key references КЛИЕНТЫ(ID_Клиента),
+Дата_выдачи date,
+Дата_возврата date,
+Сумма money
+)on FG
+USE SES_MyBase
+ ALTER Table Клиенты DROP column Контактное_лицо
+ 
+ ALTER Table Клиенты ADD Контактное_лицо nvarchar(50)
+
+ INSERT INTO ВИДЫ_КРЕДИТОВ (Название_кредита, Ставка)
+VALUES ('Ипотечный кредит', 0.05),
+       ('Потребительский кредит', 0.1),
+       ('Автокредит', 0.07);
+
+INSERT INTO ВИДЫ_СОБСТВЕННОСТИ (ID_Собственности, Вид)
+VALUES (1, 'Частная собственность'),
+       (2, 'Государственная собственность'),
+       (3, 'Корпоративная собственность');
+
+
+INSERT INTO КЛИЕНТЫ (ID_клиента, Название_фирмы, Вид_собственности, Адрес, Телефон, Контактное_лицо)
+VALUES (1, 'ООО ABC Corporation', 1, 'ул. Первая, 1', '+7 123-456-7890', 'Иванов Иван'),
+       (2, 'ИП Петров', 1, 'ул. Вторая, 2', '+7 987-654-3210', 'Петров Петр'),
+       (3, 'Государственное предприятие', 2, 'ул. Третья, 3', '+7 555-555-5555', 'Сидоров Алексей');
+
+
+INSERT INTO КРЕДИТЫ (ID, Наименование_кредита, ID_клиента, Дата_выдачи, Дата_возврата, Сумма)
+VALUES (1, 'Ипотечный кредит', 1, '2023-07-15', '2043-07-15', 5000000),
+       (2, 'Потребительский кредит', 2, '2024-02-20', '2025-02-20', 100000),
+       (3, 'Автокредит', 3, '2024-01-10', '2027-01-10', 2000000);
+
+
+SELECT * FROM КРЕДИТЫ
+
+SELECT count(*) FROM КРЕДИТЫ
+
+UPDATE КРЕДИТЫ set Сумма=20000 WHERE ID_клиента=2
